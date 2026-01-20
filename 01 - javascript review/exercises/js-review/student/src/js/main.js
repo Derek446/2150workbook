@@ -71,6 +71,7 @@ let completed = 0;
 for (const task of tasks) {
   if (task.done) completed++;
 }
+// of gives values, in gives keys/indexes.
 
 // TODO: Display: "Completed: X of Y"
 output.textContent = `Completed: ${completed} of ${tasks.length}`;
@@ -88,7 +89,7 @@ function renderTaskList(items) {
   let html = '<ul>';
   for (const item of items) {
     const status = item.done ? 'done' : 'todo';
-    html += `<li class="${status}">${item.title} (${status})</li>`;
+    html += `<li class="${status} item">${item.title} (${status})</li>`;
   }
   html += '</ul>';
   return html;
@@ -109,7 +110,7 @@ list.innerHTML = renderTaskList(tasks);
 function addMessage(message) {
   const paragraph = document.createElement('p');
   paragraph.textContent = message;
-  output.append(paragraph);
+  output.appendChild(paragraph);
 }
 
 // TODO: Test the addMessage function
@@ -168,20 +169,35 @@ function toggleDone(title) {
     if (task.title === title) {
       task.done = task.done ? false : true;
       list.innerHTML = renderTaskList(tasks);
+
     }
   }
 }
 
+toggleDone('Install dependencies');
+
 // 2. Update renderTaskList() to show '(done)' or '(todo)'
 // Done
-toggleDone('Install dependencies');
 
 // 3. Add event delegation to the <ul>
 //    - When a list item is clicked:
 //      * Toggle the task
 //      * Re-render the list
 
+const todoList = document.getElementById('todo-list');
 
+function addToggle() {
+  for (const line of todoList.firstElementChild.childNodes) {
+    line.addEventListener('click', () => {
+      const string = line.textContent;
+      const newString = string.substring(0, string.length - 7);
+      toggleDone(newString);
+      addToggle(); // Each item is replaced in toggleDone, so they must be readded;
+    })
+  }
+}
+
+addToggle();
 
 // 4. Stretch goals:
 //    - Display a chekcbox next to each task to represent done/todo 
