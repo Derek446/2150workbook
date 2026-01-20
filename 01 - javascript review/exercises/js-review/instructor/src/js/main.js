@@ -7,12 +7,13 @@
 // These IDs should already exist in index.html.
 
 // TODO: Select the main todo list container
-
+const list = document.querySelector("#todo-list");
 // TODO: Select the output area for text and messages
-
+const output = document.querySelector("#output");
 // TODO: Select the Run Demo button
-
+const btnRun = document.querySelector("#btn-run");
 // TODO: Select the Clear button
+const btnClear = document.querySelector("#btn-clear");
 
 // --------------------------------------------------
 // STEP 2: Variables and template strings
@@ -21,10 +22,11 @@
 // them using a template string.
 
 // TODO: Create a constant named course
-
+const course = "SDEV2150"
 // TODO: Create a variable named topic
-
+let topic = "JavaScript review"
 // TODO: Use a template string to display both values
+output.innerHTML = `<p>Course: ${course} | Topic: ${topic}</p>`;
 
 // --------------------------------------------------
 // STEP 3: Functions and return values
@@ -33,10 +35,23 @@
 // another function that formats a label/value pair.
 
 // TODO: Create a function add(a, b)
+function add(a, b) {
+    return a + b;
+}
 
 // TODO: Create an arrow function formatResult(label, value)
+const formatResult = (label, value) => {
+    return `${label}: ${value}`
+}
 
 // TODO: Call the functions and display the result
+output.innerHTML += `<p>
+    ${formatResult(
+        "2 + 3",
+        add(2, 3)
+    )}
+</p>`;
+
 
 // --------------------------------------------------
 // STEP 4: Arrays, objects, and iteration
@@ -46,10 +61,27 @@
 
 // TODO: Create an array named tasks
 // Each task should have: title (string), done (boolean)
-
+const tasks = [
+    { title: "Install dependencies", done: true },
+    { title: "Run dev server", done: true},
+    { title: "Complete the demo", done: false },
+];
 // TODO: Use a loop to count completed tasks
+// we *could* forEach(), or map() / filter(), but...
+let completedCount = 0;
+for (const task of tasks) {
+    if (task.done) completedCount++;
+}
+// for... of -> returns values
+// for... in -> returns keys
+
+// e.g. an array [10, 11, 12]
+//  -> for.. of -> 10, 11, 12
+//  -> for.. in -> 0, 1, 2 (i.e. the indices of the values)
 
 // TODO: Display: "Completed: X of Y"
+output.textContent = `Completed: ${completedCount} of ${tasks.length} tasks`
+// notice how this *replaces* the text/innerHTML that we were manipulating before
 
 // --------------------------------------------------
 // STEP 5: Problem solving – build HTML from data
@@ -64,7 +96,19 @@
 // - Close the list and return the string
 
 // TODO: Render the task list inside the list container
+function renderTaskList(items) {
+    let html = "<ul>";
+    for (const item of items) {
+        const status = item.done ? "done" : "todo";
+        // condition ? do if true : do if false   <-- this is called a ternary expression
+        // equivalent to ->  if (condition) {do if true} else {do if false}
+        html += `<li class="${status}">${item.title}</li>`;
+    }
+    html += "</ul>";
+    return html;
+}
 
+list.innerHTML = renderTaskList(tasks)
 // --------------------------------------------------
 // STEP 6: DOM manipulation with createElement
 // --------------------------------------------------
