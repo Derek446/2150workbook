@@ -1,3 +1,5 @@
+// I don't need to do anything to the template, because it's just an as-is input interface.
+
 const template = document.createElement('template');
 template.innerHTML = `
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
@@ -46,14 +48,81 @@ template.innerHTML = `
     </div>
   </aside>`;
 
+
+// step 2
 class ResourceFilters extends HTMLElement {
   constructor() {
     super();
     this.attachShadow({ mode: 'open' });
+    this._handleSubmit = this._handleSubmit.bind(this);
+    this._handleCategoryClick = this._handleCategoryClick.bind(this);
   }
 
   connectedCallback() {
     this.render();
+
+    this._form = this.shadowRoot.querySelector('#frm-filter');
+    this._form.addEventListener('submit', this._handleSubmit);
+
+    this._categoryGroup = this.shadowRoot.querySelector('[aria-label="Category filters"]'); // aria-label is its uniquely identifying attribute
+    this._categoryGroup.addEventListener('click', this._handleCategoryClick);
+  }
+
+  disconnectedCallback() {
+    if (this._form) {
+      this._form.removeEventListener('submit', this._handleSubmit);
+    }
+    if (this._categoryGroup) {
+      this._categoryGroup.removeEventListener('click', this._handleCategoryClick);
+    }
+  }
+
+  _handleCategoryClick(event) {
+    const button = event.target.closest('button');
+    if (!button || !this._categoryGroup.contains(button)) {
+      // If no button could be identified ||or the click happened within this div but not on a button, GTFO
+      return;
+    }
+
+    const activeButton = this._categoryGroup.querySelector('.active');
+    if (activeButton && activeButton !== button) {
+      // If there is an active button &&and it's !==not the one just clicked, toggle it to inactive
+      activeButton.classList.remove('active');
+    }
+
+    // With the above checks passed, we can toggle the button that just got clicked
+    button.classList.add('active');
+  }
+
+  _handleSubmit(event) {
+    event.preventDefault();
+
+    const searchQuery = this.shadowRoot.querySelector('#q').value.trim();
+    // Getting the category requires a few steps of work: find group -> find active button -> find its text value
+    const categoryGroup = this.shadowRoot.querySelector('[aria-label="Category filters"]'); // aria-label is its uniquely identifying attribute
+    const categoryButton = categoryGroup.querySelector('.active') || categoryGroup.querySelector('button');
+    const category = categoryButton ? categoryButton.textContent.trim().toLowerCase() : 'all'; // default to all if no selected button
+    const openNow = this.shadowRoot.querySelector('#openNow').checked;
+    const virtual = this.shadowRoot.querySelector('#virtual').checked;
+
+    const filters = {
+      // data elements go here, once I've extracted input values from the DOM
+      searchQuery,
+      category,
+      openNow,
+      virtual,
+    };
+
+    const filtersEvent = new CustomEvent(
+      'resource-filters-changed',
+      {
+        detail: filters,
+        bubbles: true,
+        composed: true,
+      },
+    );
+
+    this.dispatchEvent(filtersEvent);
   }
 
   render() {

@@ -8,7 +8,7 @@ template.innerHTML = `
         <span class="badge text-bg-secondary">4</span>
       </div>
 
-      <div class="list-group list-group-flush">
+      <div class="list-group list-group-flush d-flex flex-column flex-fill">
 
         <!-- results will be injected here, by selecting for .list-group and embedding inner HTML -->
 
@@ -17,17 +17,107 @@ template.innerHTML = `
   </section>`;
 
 class ResourceResults extends HTMLElement {
+  // If I'm filtering, I need
+  // - one place to load/store the *full* dataset of results, (already exists: #results)
   #results = [];
+  // - and another place to store the *filtered* dataset
+  #filteredResults = [];
+  // - this also means I have to render from the *filtered* dataset, not #results
+  #filters = {
+    // We could've added default values earlier, since we knew the data shape,
+    // but I chose to wait until I wrote the event & its payload in case any surprises came up.
+    searchQuery: '',
+    category: 'all',
+    openNow: false,
+    virtual: false,
+  };
+  // I need a method for applying the filters to the results
+
+  // I need to modify my render method accordingly
 
   constructor() {
     super();
-    this._handleResultClick = this._handleResultClick.bind(this); 
+    this._handleResultClick = this._handleResultClick.bind(this);
     this.attachShadow({ mode: 'open' });
   }
 
   set results(data) {
-    this.#results = data;
+    this.#results = data; // This is now just a data container for *all* results. We don't mutate it anymore.
+
+    // SUPER IMPORTANT: We're rendering from filtered results now, and our initial state is unfiltered.
+    // Spreading out '[...data]'' just to wrap it back in a list (instead of just passing 'data' again) *looks* stupid, BUT
+    //  doing this creates a shallow copy. If we just passed data, both array variables would point to the same reference,
+    //  so modifying #filteredResults would also affect #results!
+    this.#filteredResults = [...data];
     this.render();
+  }
+
+  set filters(incomingFilters) {
+    // If I have a private array, I need a setter for it
+    this.#filters = incomingFilters;
+    // Setting the filters is easy now that I know that in this example's case, we'll receive complete data every time.
+    // After I set/store the incoming filter inputs, I know I need to apply them.
+    this.#applyFilters();
+  };
+
+  #applyFilters() {
+    // This will be its own method, because I can anticipate the logic being extensive.
+    // Now that I'm sure of the data shape, I can prepare work on this.
+    const { searchQuery, category, openNow, virtual } = this.#filters; // if this is new to you, look up "destructuring"!
+    const q = searchQuery.trim().toLowerCase();
+
+    // We'll complete the logic that actually filters from the results array in the next commit, but I can plan this out now.
+    //   1. If I have any user-written string inputs in the filters, I'll want to clean those up first. (I do! It's searchQuery).
+    //      The rest of the terms are either booleans or predefined strings the user doesn't have access to, so I don't need to sanitise them.
+    //   2. There are lots of ways of writing filtering/matching logic; my preference would be
+    this.#filteredResults = this.#results.filter(
+      // Yup, big comments. For what you'll learn, you'll hate me this weekend, and thank me later!
+      (item) => {
+        // Include the item filteredResults if this function returns truthy.
+        // Item must pass ALL checks below (searchbox, category, checkboxes).
+
+        // ----------------------------------------------------------------------------------------
+        // We can chain the || (OR) operator for conciseness.
+        //   condition1 || condition2 || condition3 ...
+        //
+        // Returns the first truthy value, then stops — just like if -> else if -> else chains!
+        // If nothing works out along the way, it just returns the last value.
+
+        // We can repurpose this as:
+        //   !filterWasUsed || condition1 || condition2 ...
+
+        // If filter was *not used*, any value is acceptable -> pass the check immediately.
+        // Otherwise, continue down the chain of conditions until something matches (or you reach the last term).
+        // ----------------------------------------------------------------------------------------
+
+        // Let's start with the searchbox string.
+        // If we join all relevant text fields into one string, we can just see if our query string is in it.
+        const matchesSearchQuery = !q || [item.title, item.summary, item.location].join(' ').toLowerCase().includes(q);
+        // Empty strings are falsey, so:
+        //   1) searchbox empty    -> q is "" -> !q is true  -> returns true, check passes.
+        //   2) searchbox has text            -> !q is false -> .includes() check runs.
+        //      -> if .includes() finds a match: return true, check passes. No match: return false, check fails.
+
+        // Same idea, more terms in the chain.
+        const matchesCategory = !category || category === 'all'
+          || item.category.toLowerCase() === category.toLowerCase();
+        // 1) no category specified -> nothing to filter -> return true, chain stops, check passes.
+        // 2) category is 'all'     -> nothing to filter -> return true, chain stops, check passes.
+        // 3) some other category   -> only pass if item.category matches the string (extracted from the button).
+
+        // I left the checkboxes for last, because starting with them would have been a headache:
+        // "Return true to pass test, but unchecked checkboxes are false, then if it's checked, item.openNow can be true or false".
+        // Yeah no thanks. But now we know what we're looking at:
+        const matchesOpenNow = !openNow || item.openNow;
+        // If checkbox is checked, only include item if item.openNow is true
+        const matchesVirtual = !virtual || item.virtual;
+        // If checkbox is checked, only include item if item.virtual is true
+
+        // Item must have passed ALL checks above (&& is AND) to be included in the filtered array.
+        return matchesSearchQuery && matchesCategory && matchesOpenNow && matchesVirtual;
+      });
+
+    this.render(); // I already know I'll need to re-render, because I'm changing the data displayed by the UI
   }
 
   _handleResultClick(event) {
@@ -37,7 +127,7 @@ class ResourceResults extends HTMLElement {
       button.classList.add('active');
 
       const resultID = button.getAttribute('data-id');
-      const result = this.#results.find(r => r.id === resultID);  // note that we're finding the data object from the array, not the UI row!
+      const result = this.#results.find(r => r.id === resultID); // note that we're finding the data object from the array, not the UI row!
 
       const resultSelectedEvent = new CustomEvent(
         'resource-selected',
@@ -45,7 +135,7 @@ class ResourceResults extends HTMLElement {
           detail: { result },
           bubbles: true,
           composed: true,
-        }
+        },
       );
 
       this.dispatchEvent(resultSelectedEvent);
@@ -57,30 +147,30 @@ class ResourceResults extends HTMLElement {
     this.render();
   }
 
-  disconnectedCallback () {
+  disconnectedCallback() {
     this.shadowRoot.removeEventListener('click', this._handleResultClick);
   }
-  
+
   render() {
-    const content = template.content.cloneNode(true)
+    // - I will have to render from the *filtered* dataset, not #results
+    const content = template.content.cloneNode(true);
     const listGroup = content.querySelector('.list-group');
 
-
-    if (this.#results.length) {
-      const resultsHTML = this.#results.map(
+    // Now that we're set up to render from #filteredResults instead, let's reflect that here:
+    if (this.#filteredResults.length) {
+      const resultsHTML = this.#filteredResults.map(
         result => `
-        <button type="button" class="list-group-item list-group-item-action" data-id="${result.id}">
+        <button type="button" class="list-group-item list-group-item-action flex-fill" data-id="${result.id}">
           <div class="d-flex w-100 justify-content-between">
             <h2 class="h6 mb-1">${result.title}</h2>
             <small>${result.category}</small>
           </div>
           <p class="mb-1 small text-body-secondary">${result.summary}</p>
           <small class="text-body-secondary">${result.location}</small>
-        </button>`
-      ); 
+        </button>`,
+      );
 
       listGroup.innerHTML = resultsHTML.join(''); // resultsHTML is an array, so combine each HTML blob back-to-back into a string
-
     } else {
       listGroup.innerHTML = `
         <div class="list-group-item">
