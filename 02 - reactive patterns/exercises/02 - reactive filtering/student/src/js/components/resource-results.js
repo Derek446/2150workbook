@@ -8,10 +8,8 @@ template.innerHTML = `
         <span class="badge text-bg-secondary">4</span>
       </div>
 
-      <div class="list-group list-group-flush d-flex flex-column flex-fill">
-
+      <div class="list-group list-group-flush">
         <!-- results will be injected here, by selecting for .list-group and embedding inner HTML -->
-
       </div>
     </div>
   </section>`;

@@ -35,7 +35,6 @@ class ResourceResults extends HTMLElement {
   }
 
   // TODO: Stage 2: Observe the `source` attribute
-
   set results(data) {
     this.#results = data;
     this.#filteredResults = [...data];
@@ -83,6 +82,38 @@ class ResourceResults extends HTMLElement {
 
   disconnectedCallback() {
     this.shadowRoot.removeEventListener('click', this._handleResultClick);
+  }
+
+  static get observedAttributes() { // HTMLElement callback function to declare which attributes are monitored for change
+    return ['source']; // array of attributes I'm monitoring
+  }
+
+  attributeChangedCallback(name, oldVal, newVal) {
+    // 1.a) check if name matches the attribute we want to execute logic for (I might be monitoring multiple attributes)
+    // 1.b) check if value has changed
+    if (name === 'source' && oldVal !== newVal) {
+      // 2. if checks pass, fetch the data from the source (i.e. newVal)
+      if (this.isConnected) {
+        this.#fetchData(newVal);
+      }
+    }
+  }
+
+  async #fetchData(source) {
+    // try-except a fetch
+    try {
+      const response = await fetch(source);
+      // check if response is OK (i.e. status code 200)
+      if (!response.ok) {
+        throw new Error(`Network response not ok: ${response.statusText}`);
+      }
+      // if so, try to get data from response
+      const data = await response.json();
+      this.results = data;
+      // catch and log any errors
+    } catch (error) {
+      console.error('Failed to fetch data: ', error);
+    }
   }
 
   #applyFilters() {

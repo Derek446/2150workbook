@@ -4,14 +4,6 @@ import './components/resource-filters.js';
 import './components/resource-results.js';
 import './components/resource-details.js';
 
-// TODO: Stage 1: Replace hard-coded data with a fetch() call
-const response = await fetch('http://localhost:3000/resources');
-const data = await response.json();
-
-// TODO: Stage 1: After fetching from the API, pass the fetched resources into <resource-results>
-const resultsComponent = document.querySelector('resource-results');
-resultsComponent.results = data;
-
 // Sample data for resources
 // const resultData = [
 //   {
@@ -59,6 +51,14 @@ resultsComponent.results = data;
 //     openNow: true,
 //   },
 // ];
+
+// TODO: Stage 1: After fetching from the API, pass the fetched resources into <resource-results>
+const resultsComponent = document.querySelector('resource-results');
+
+// TODO: Stage 1: Replace hard-coded data with a fetch() call
+// const response = await fetch('http://localhost:3000/resources');
+// const data = await response.json();
+// resultsComponent.results = data;
 
 // Filters emit state, main.js updates results and resets details
 const filtersComponent = document.querySelector('resource-filters');
