@@ -64,7 +64,9 @@ Add daisyUI in  CSS file (and remove old styles)
 ```css
 /* src/index.css */
 @import "tailwindcss";
-@plugin "daisyui";
+@plugin "daisyui"{
+    themes: all;
+}
 ```
 
 Restart the dev server (if necessary) after making this change.
