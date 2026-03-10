@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useSelectedResource } from './hooks/useSelectedResource';
 
 import Header from './components/Header';
 import Filters from './components/Filters';
@@ -10,8 +11,10 @@ function App() {
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCategories, setSelectedCategories] = useState([]);
   const [openNowOnly, setOpenNowOnly] = useState(false);
-  const [selectedResource, setSelectedResource] = useState(null);
   const [virtualOnly, setVirtualOnly] = useState(false);
+
+  // Custom hook
+  const [selectedResource, setSelectedResource] = useSelectedResource();
 
   return (
     <PageLayout header={<Header tagline="Find the right resources, right away" />}>

@@ -6,6 +6,19 @@ import { useState } from 'react';
 export default function Filters() {
   const [searchTerm, setSearchTerm] = useState('');
   const [categories, setCategories] = useState([]);
+  const [openNowOnly, setOpenNowOnly] = useState(false);
+  
+  function handleSubmit(e) {
+    e.preventDefault();
+    console.log('Filters submitted');
+    // Don't reset so user can see their filters.
+  }
+
+  function resetForm() {
+    setSearchTerm('');
+    setCategories([]);
+    setOpenNowOnly(false);
+  }
 
   function toggleCategory(category) {
     setCategories((prev) => {
@@ -16,25 +29,23 @@ export default function Filters() {
       return [...prev, category];
     });
   }
+
   return (
     <Card title="Filters">
       <div className="space-y-4 p-4">
-        <form id="frm-filter" className="space-y-4">
+        <form onSubmit={handleSubmit} id="frm-filter" className="space-y-4">
           <div className="space-y-1">
             <label htmlFor="q" className="block text-sm font-medium text-gray-700">
               Search
+              <input
+                id="q"
+                type="text"
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="input input-bordered w-full"
+                placeholder="Search resources..."
+              />
             </label>
-            <input
-              id="q"
-              type="text"
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className="input input-bordered w-full"
-              placeholder="Search resources..."
-            />
-            <p className="text-sm text-base-content/70">
-              Searching for: {searchTerm}
-            </p>
           </div>
 
           <hr className="border-gray-200" />
@@ -46,7 +57,7 @@ export default function Filters() {
                 <button
                   key={label}
                   type="button"
-                  className = {`${categories.includes(label) && 'bg-sky-600 text-white'} rounded border border-sky-600 px-3 py-1 text-xs font-semibold text-sky-700 hover:bg-sky-50 `}
+                  className={`${categories.includes(label) && 'bg-sky-600 text-white'} rounded border border-sky-600 px-3 py-1 text-xs font-semibold text-sky-700 hover:bg-sky-50 `}
                   onClick={() => toggleCategory(label)}
                 >
                   {label}
@@ -61,8 +72,9 @@ export default function Filters() {
             <label className="flex items-center gap-2 text-sm text-gray-700">
               <input
                 type="checkbox"
-                id="openNow"
-                className="h-4 w-4 rounded border-gray-300 text-sky-600 focus:ring-sky-500"
+                className="checkbox"
+                checked={openNowOnly}
+                onChange={(e) => setOpenNowOnly(e.target.checked)}
               />
               Open now
             </label>
@@ -80,7 +92,7 @@ export default function Filters() {
           <hr className="border-gray-200" />
 
           <div className="flex gap-2">
-            <button
+            <button onClick={resetForm}
               type="button"
               className="rounded border border-gray-300 px-4 py-2 text-sm font-semibold text-gray-700 hover:bg-gray-50"
             >

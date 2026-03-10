@@ -3,18 +3,53 @@ import Filters from './components/Filters';
 import Results from './components/Results';
 import Details from './components/Details';
 import PageLayout from './components/layout/PageLayout';
+import { useState } from 'react';
+import Card from './components/ui/Card';
 
 function App() {
+
+  const [searchTerm, setSearchTerm] = useState('');
+  const [selectedCategories, setSelectedCategories] = useState([]);
+  const [openNowOnly, setOpenNowOnly] = useState(false);
+  const [selectedResource, setSelectedResource] = useState(null);
+  const [virtualOnly, setVirtualOnly] = useState(false);
+
   return (
     <PageLayout header={<Header tagline="Find the right resources, right away" />}>
       <aside className="md:col-span-3 lg:col-span-1">
-        <Filters />
+        <Filters
+          searchTerm={searchTerm}
+          onSearchChange={setSearchTerm}
+          selectedCategories={selectedCategories}
+          onCategoryToggle={setSelectedCategories}
+          openNowOnly={openNowOnly}
+          onOpenNowChange={setOpenNowOnly}
+          virtualOnly={virtualOnly}
+          onVirtualOnlyChange={setVirtualOnly}
+        />
       </aside>
       <section className="md:col-span-2 lg:col-span-1">
-        <Results />
+        <Results
+          selectedResource={selectedResource}
+          onSelectResource={setSelectedResource}
+          searchTerm={searchTerm}
+          selectedCategories={selectedCategories}
+          openNowOnly={openNowOnly}
+          virtualOnly={virtualOnly}
+        />
       </section>
       <aside className="md:col-span-1 lg:col-span-1">
-        <Details />
+        {selectedResource ? (
+          <Details resource={selectedResource} />
+        ) : (
+          <Card title="Resource Details">
+            <div className="space-y-3 p-4">
+              <div className="text-sm text-base-content/70">
+                Select a resource to view details.
+              </div>
+            </div>
+          </Card>
+        )}
       </aside>
     </PageLayout>
     // <PageLayout
