@@ -20,6 +20,7 @@ export function useResources() {
 
       const data = await res.json();
       setResources(data);
+      
     } catch (err) {
       if (err.name !== 'AbortError') {
         setError(err);
@@ -32,7 +33,7 @@ export function useResources() {
   useEffect(() => {
     // If dependency is []: effect fires only on load
     // If [variable]: effect fires when values change
-    // If no dependency: effect fires anytime component...
+    // If no dependency: effect fires anytime component re-renders
     const controller = new AbortController();
     fetchResources(controller.signal);
 

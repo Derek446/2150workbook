@@ -1,6 +1,7 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 
 const STORAGE_KEY = 'selectedResource';
+
 
 export function useSelectedResource() {
   const [selectedResource, setSelectedResource] = useState(() => {
@@ -13,19 +14,29 @@ export function useSelectedResource() {
         return null;
       }
     }
-    
+
     return null;
   });
 
-  function updateSelectedResource(resource) {
-    setSelectedResource(resource);
+  // function updateSelectedResource(resource) {
+  //   setSelectedResource(resource);
 
-    if (resource === null) {
+  //   if (resource === null) {
+  //     sessionStorage.removeItem(STORAGE_KEY);
+  //   } else {
+  //     sessionStorage.setItem(STORAGE_KEY, JSON.stringify(resource));
+  //   }
+  // }
+
+  // Replacing setter with useEffect. Previous version did not let us hook state changes to re-fire
+  useEffect(() => {
+    if (selectedResource === null) {
       sessionStorage.removeItem(STORAGE_KEY);
-    } else {
-      sessionStorage.setItem(STORAGE_KEY, JSON.stringify(resource));
+      return;
     }
-  }
 
-  return [selectedResource, updateSelectedResource];
+    sessionStorage.setItem(STORAGE_KEY, JSON.stringify(selectedResource));
+  }, [selectedResource]);
+
+  return [selectedResource, setSelectedResource];
 }
