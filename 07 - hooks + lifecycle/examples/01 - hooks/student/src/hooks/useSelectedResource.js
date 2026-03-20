@@ -8,6 +8,7 @@ export function useSelectedResource() {
 
         if (stored) {
             try {
+                console.log("found something stored");
                 return JSON.parse(stored);
             } catch {
                 return null;
