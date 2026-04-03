@@ -43,17 +43,6 @@
       "contact": "it@nait.ca",
       "virtual": false,
       "openNow": true
-    },
-    {
-      "id": "res_1774310686144_6b3aye",
-      "title": "Going Home Club",
-      "category": "Wellness",
-      "summary": "Go home and sleep",
-      "location": "Home",
-      "hours": "anytime",
-      "contact": "don't",
-      "virtual": true,
-      "openNow": true
     }
   ]
 }

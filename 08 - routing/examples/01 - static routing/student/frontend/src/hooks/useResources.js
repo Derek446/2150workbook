@@ -11,7 +11,7 @@ export function useResources() {
     setIsLoading(true);
     setError(null);
     
-    // // delay for demo purposes
+    // delay for demo purposes
     // await new Promise((resolve) => setTimeout(resolve, 2000));
     
     try {
