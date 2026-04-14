@@ -4,12 +4,12 @@
       "id": "tutoring",
       "title": "Peer Tutoring Centre",
       "category": "Academic",
-      "summary": "Drop-in tutoring and study support.",
+      "summary": "Drop-in tutoring and study support",
       "location": "Building W, Room W101",
       "hours": "Mon-Thu 10:00-16:00",
       "contact": "tutoring@nait.ca",
       "virtual": false,
-      "openNow": true
+      "openNow": false
     },
     {
       "id": "counselling",

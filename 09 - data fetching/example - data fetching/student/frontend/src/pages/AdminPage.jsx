@@ -1,8 +1,7 @@
-import { useNavigate, useParams } from 'react-router';
+import { useNavigate } from 'react-router';
 
-import { useResources } from '../hooks/useResources';
+import { Form, useLoaderData, useNavigation } from 'react-router';
 import Card from '../components/ui/Card';
-import ResourceForm from '../components/ResourceForm';
 
 // Now that the form has been moved into its own component, we can define a constant
 // for the default form data.
@@ -18,10 +17,11 @@ const EMPTY_FORM_DATA = {
 };
 
 export default function AdminPage() {
-  const { resourceId } = useParams();
   const navigate = useNavigate();
 
-  const { resources, isLoading, error, refetch } = useResources();
+  const { resources, selectedResource, resourceId } = useLoaderData();
+  const navigation = useNavigation();
+  const isSubmitting = navigation.state === 'submitting';
 
   // We no longer require a useEffect to track the current resource. Instead, we 
   // can derive it directly from the URL param and the list of resources. If the 
@@ -29,59 +29,9 @@ export default function AdminPage() {
   // If it's not present, currentResource will be null, which indicates that we're
   // creating a new resource rather than editing an existing one.
 
-  // Track the current resource based on the URL param. If no resourceId is present, 
-  // currentResource will be null.
-  const currentResource = resourceId
-    ? resources.find((item) => item.id === resourceId)
-    : null;
-
-  // Set the initial form data based on the current resource. If it's not null, use 
-  // the resource's data. Otherwise, use the empty form data.
-  const initialFormData = currentResource ? {
-    title: currentResource.title,
-    category: currentResource.category,
-    summary: currentResource.summary,
-    location: currentResource.location,
-    hours: currentResource.hours,
-    contact: currentResource.contact,
-    virtual: currentResource.virtual,
-    openNow: currentResource.openNow,
-  } : EMPTY_FORM_DATA;
-
   function handleEditStart(resource) {
     navigate(`/admin/${resource.id}`);
   }
-
-  async function handleCreateResource(e, formData) {
-    e.preventDefault();
-
-    const isEditing = Boolean(resourceId);
-    const url = isEditing
-      ? `http://localhost:3000/resources/${resourceId}`
-      : 'http://localhost:3000/resources';
-
-    const method = isEditing ? 'PUT' : 'POST';
-
-    const res = await fetch(url, {
-      method,
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(formData),
-    });
-
-    if (!res.ok) {
-      throw new Error(`Could not ${isEditing ? 'update' : 'create'} resource`);
-    }
-
-    const savedResource = await res.json();
-    await refetch();
-
-    navigate(`/admin/${savedResource.id}`);
-  }
-
-  // Determine if we're in editing mode based on the presence of the resourceId param.
-  const isEditing = Boolean(resourceId);
 
   return (
     <>
@@ -92,38 +42,87 @@ export default function AdminPage() {
         </p>
       </div>
 
-      {isLoading && <p>Loading resources...</p>}
-
-      {error && (
-        <div className="alert alert-error">
-          <span>{error.message}</span>
-          <button className="btn btn-sm" onClick={refetch}>Try again</button>
-        </div>
-      )}
-
       <section className="md:col-span-3 lg:col-span-3">
-        <Card title="Resource Form">
-          <div className="card-body">
-            {resourceId && isLoading && <p>Loading selected resource...</p>}
-
-            {resourceId && !isLoading && !currentResource && (
-              <p className="text-sm text-red-600">
-                Selected resource could not be found.
-              </p>
-            )}
-
-            {/* Update to make use of the ResourceForm component */}
-            {(!resourceId || currentResource) && (
-              <ResourceForm
-                key={resourceId ?? 'new'}
-                initialData={initialFormData}
-                isEditing={isEditing}
-                onSubmit={handleCreateResource}
-                onReset={() => navigate('/admin')}
-              />
-            )}
+        <Form method="post" className="space-y-4">
+          <div className="space-y-1">
+            <label className="block text-sm font-medium">Title</label>
+            <input
+              id="q"
+              name="title"
+              type="text"
+              className="input input-bordered w-full"
+              defaultValue={selectedResource?.title ?? ''}
+            />
+            <label htmlFor="q" className="block text-sm font-medium text-gray-700">Category</label>
+            <input
+              id="q"
+              name='category'
+              type="text"
+              className="w-full rounded border border-gray-300 px-3 py-2 text-sm text-gray-900 placeholder-gray-400 focus:border-sky-500 focus:outline-none focus:ring-2 focus:ring-sky-200"
+              defaultValue={selectedResource?.category ?? ''}
+            />
+            <label htmlFor="q" className="block text-sm font-medium text-gray-700">Summary</label>
+            <input
+              id="q"
+              name='summary'
+              type="text"
+              className="w-full rounded border border-gray-300 px-3 py-2 text-sm text-gray-900 placeholder-gray-400 focus:border-sky-500 focus:outline-none focus:ring-2 focus:ring-sky-200"
+              defaultValue={selectedResource?.summary ?? ''}
+            />
+            <label htmlFor="q" className="block text-sm font-medium text-gray-700">Location</label>
+            <input
+              id="q"
+              name='location'
+              type="text"
+              className="w-full rounded border border-gray-300 px-3 py-2 text-sm text-gray-900 placeholder-gray-400 focus:border-sky-500 focus:outline-none focus:ring-2 focus:ring-sky-200"
+              defaultValue={selectedResource?.location ?? ''}
+            />
+            <label htmlFor="q" className="block text-sm font-medium text-gray-700">Hours</label>
+            <input
+              id="q"
+              name='hours'
+              type="text"
+              className="w-full rounded border border-gray-300 px-3 py-2 text-sm text-gray-900 placeholder-gray-400 focus:border-sky-500 focus:outline-none focus:ring-2 focus:ring-sky-200"
+              defaultValue={selectedResource?.hours ?? ''}
+            />
+            <label htmlFor="q" className="block text-sm font-medium text-gray-700">Contact</label>
+            <input
+              id="q"
+              name='contact'
+              type="text"
+              className="w-full rounded border border-gray-300 px-3 py-2 text-sm text-gray-900 placeholder-gray-400 focus:border-sky-500 focus:outline-none focus:ring-2 focus:ring-sky-200"
+              defaultValue={selectedResource?.contact ?? ''}
+            />
+            <label htmlFor="q" className="block text-sm font-medium text-gray-700">Virtual</label>
+            <input
+              id="q"
+              name='virtual'
+              type="checkbox"
+              className="w-full rounded border border-gray-300 px-3 py-2 text-sm text-gray-900 placeholder-gray-400 focus:border-sky-500 focus:outline-none focus:ring-2 focus:ring-sky-200"
+              defaultChecked={selectedResource?.virtual ?? false}
+            />
+            <label htmlFor="q" className="block text-sm font-medium text-gray-700">Open Now</label>
+            <input
+              id="q"
+              name='open'
+              type="checkbox"
+              className="w-full rounded border border-gray-300 px-3 py-2 text-sm text-gray-900 placeholder-gray-400 focus:border-sky-500 focus:outline-none focus:ring-2 focus:ring-sky-200"
+              defaultChecked={selectedResource?.openNow ?? false}
+            />
           </div>
-        </Card>
+
+          <button
+            type="submit"
+            className="rounded bg-sky-600 px-4 py-2 text-sm font-semibold text-white hover:bg-sky-700"
+            disabled={isSubmitting}
+          >
+            {isSubmitting
+              ? 'Saving...'
+              : resourceId
+                ? 'Update Resource'
+                : 'Add Resource'}
+          </button>
+        </Form>
       </section>
 
       <section className="md:col-span-3 lg:col-span-3">
