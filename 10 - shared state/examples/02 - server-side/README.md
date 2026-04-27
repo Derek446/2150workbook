@@ -224,12 +224,12 @@ Instead:
 - fetch resource data with `useQuery`
 - keep React Router for routing and params only
 
-Update `ResourceDirectoryPage.tsx` to make use of TanStack Query:
+Update `ResourceDirectoryPage.jsx` to make use of TanStack Query:
 
 > The `...` represent existing code that will remain in the component.
 
 ```jsx
-// ResourceDirectoryPage.tsx
+// ResourceDirectoryPage.jsx
 import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 ...

@@ -28,7 +28,7 @@ export default function ResourceForm({
   }
 
   return (
-    <Form method="post" className="space-y-4">
+    <Form method="post" action='/admin' className="space-y-4">
       <div className="space-y-1">
         <label htmlFor="title" className="block text-sm font-medium text-gray-700">
           Title

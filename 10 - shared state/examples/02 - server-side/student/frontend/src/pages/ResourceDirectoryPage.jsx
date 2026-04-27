@@ -1,6 +1,6 @@
 import { useState } from 'react';
-// import { useResources } from '../hooks/useResources';
-import { useLoaderData } from 'react-router';
+import { useQuery } from '@tanstack/react-query';
+import { fetchResources, fetchResourceById } from '../api/resources';
 import { useSelectedResource } from '../hooks/useSelectedResource';
 
 import Filters from '../components/Filters';
@@ -11,29 +11,42 @@ export default function ResourceDirectoryPage() {
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCategories, setSelectedCategories] = useState([]);
   const [openNowOnly, setOpenNowOnly] = useState(false);
-  // const [selectedResource, setSelectedResource] = useState(null);
   const [selectedResource, setSelectedResource] = useSelectedResource();
   const [virtualOnly, setVirtualOnly] = useState(false);
 
-  // const { resources, isLoading, error, refetch } = useResources();
-  const { resources } = useLoaderData();
+  const {
+    data: resources = [],
+    isLoading,
+    isError,
+    error,
+  } = useQuery({
+    queryKey: ['resources'],
+    queryFn: fetchResources,
+  });
+
+  const selectedResourceId = selectedResource?.id ?? null;
+
+  const {
+    data: selectedResourceData,
+  } = useQuery({
+    staleTime: 5 * 60 * 1000, 
+    queryKey: ['resource', selectedResourceId],
+    queryFn: () => fetchResourceById(selectedResourceId),
+    enabled: Boolean(selectedResourceId),
+  });
+
+  const displayedResource = selectedResourceData ?? selectedResource;
+
+  if (isLoading) {
+    return <p>Loading resources...</p>;
+  }
+
+  if (isError) {
+    return <p>Error loading resources: {error.message}</p>;
+  }
 
   return (
     <>
-      {/* The following is not great for UX/UI, but it gets the point across. Feel free to style
-      the loading and error states in "nicer" way. */}
-      {/* {isLoading && (
-        <div className="text-sm text-base-content/70">Loading resources...</div>
-      )}
-      {error && (
-        <div className="alert alert-error">
-          <div>
-            <p className="font-semibold">Could not load resources</p>
-            <p className="text-sm opacity-80">{error.message}</p>
-            <button className="btn btn-sm mt-2" onClick={refetch}>Try again</button>
-          </div>
-        </div>
-      )} */}
       <aside className="md:col-span-3 lg:col-span-1">
         <Filters
           searchTerm={searchTerm}
@@ -58,8 +71,8 @@ export default function ResourceDirectoryPage() {
         />
       </section>
       <aside className="md:col-span-1 lg:col-span-1">
-        {selectedResource ? (
-          <Details resource={selectedResource} />
+        {displayedResource ? (
+          <Details resource={displayedResource} />
         ) : (
           <div className="text-sm text-base-content/70">
             Select a resource to view details.
